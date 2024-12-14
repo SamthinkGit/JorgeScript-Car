@@ -13,8 +13,11 @@ void setup() {
 }
 
 void aLoop(void *params) {
-  warningLights();
-  delay(2000);
+  SimpleRT rt = SimpleRT(2000);
+  while (true) {
+    aWarningLights();
+    rt.awaitNextIteration();
+  }
 }
 
 

@@ -31,3 +31,12 @@ void warningLights() {
   }
 }
 
+void aWarningLights() {
+  SimpleRT rt = SimpleRT(0);
+  for (int i = 0; i < 3; i++) {
+    showColor(255, 0, 0);
+    rt.await(100);
+    turnLightOff();
+    rt.await(100);
+  }
+}
