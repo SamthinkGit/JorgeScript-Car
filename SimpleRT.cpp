@@ -20,3 +20,11 @@ void SimpleRT::await(unsigned long time_ms) {
 void SimpleRT::awaitNextIteration() {
     xTaskDelayUntil(&xLastWakeTime, (period / portTICK_PERIOD_MS));
 }
+
+void SimpleRT::newTask(char* name, void (*func)(), int priority) {
+    xTaskCreate(func, name, 128, NULL, priority, NULL);
+}
+
+void SimpleRT::start() {
+    vTaskStartScheduler();
+}

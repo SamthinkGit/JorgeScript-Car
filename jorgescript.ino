@@ -1,6 +1,5 @@
-//#include <Arduino_FreeRTOS.h>  // Include the RT lib
 #include "FastLED.h"
-// #include "SimpleRT.hpp"
+#include "SimpleRT.hpp"
 
 void setup() {
 
@@ -9,9 +8,15 @@ void setup() {
   Serial.println("----- STARTING -----");
 
   setupLed();
+  SimpleRT::newTask("aLoop", aLoop, 1);
+  SimpleRT::start();
 }
 
-void loop() {
+void aLoop(void *params) {
   warningLights();
   delay(2000);
+}
+
+
+void loop() {
 }

@@ -19,6 +19,9 @@ public:
     SimpleRT(unsigned long period_ms);   // Here we stablish the frequency of the RT task
     void await(unsigned long time_ms);   // Await an specific set of ms
     void awaitNextIteration();
+    static void newTask(char* name, void (*func)(), int priority);
+    static void start();
 };
+
 
 #endif
