@@ -1,4 +1,5 @@
 #include "SimpleRT.hpp"
+#include "WeighedDetection.hpp"
 
 void setup() {
 
@@ -12,9 +13,14 @@ void setup() {
 }
 
 void aLoop(void *params) {
+  WeighedDetector detector = WeighedDetector();
   SimpleRT rt = SimpleRT(200);
 
   while(true) {
+    detector.read();
+    detector.computeProbs();
+    detector.log();
+    detector.computeSlope();
     rt.awaitNextIteration();
   }
 }

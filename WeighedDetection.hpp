@@ -9,7 +9,7 @@
 #define PIN_ITR20001_RIGHT  A0
 
 
-const int LASER_UMBRAL = 800;
+const int LASER_UMBRAL = 100;
 const float MAX_PROB = 0.85;
 const float MIN_PROB = 0.15;
 const float CENTER_INFLUENCE = 2.0;
@@ -20,9 +20,9 @@ private:
     int detections[3];
     int digital_detections[3];
     float weights[3];
-    float slope;
 
 public:
+    float slope;
     WeighedDetector();
     void read();
     void log();

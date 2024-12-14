@@ -21,23 +21,33 @@ void WeighedDetector::read() {
   detections[0] = analogRead(PIN_ITR20001_LEFT);
   detections[1] = analogRead(PIN_ITR20001_MIDDLE);
   detections[2] = analogRead(PIN_ITR20001_RIGHT);
+  int result[3];
+  
+  for (int i = 0; i < 3; i++) {
+    result[i] = detections[i] > LASER_UMBRAL ? 1 : 0;
+  }
+
+  // If all the detections fail, then we keep the latest state
+  if (result[0] == 0 && result[1] == 0 && result[2] == 0) {
+    return;
+  }
 
   for (int i = 0; i < 3; i++) {
-    digital_detections[i] = detections[i] > LASER_UMBRAL ? 1 : 0;
+    digital_detections[i] = result[i];
   }
 }
 
 void WeighedDetector::computeProbs() {
   for (int i = 0; i < 3; i++) {
-    weights[i] = max(min((weights[i] + digital_detections[i]) / 2, MAX_PROB), MIN_PROB);
+    weights[i] = constrain((weights[i] + digital_detections[i]) / 2, MIN_PROB, MAX_PROB);
   }
 }
 
 void WeighedDetector::computeSlope() {
   if (weights[0] > weights[2]) {
-    slope = (CENTER_INFLUENCE*(weights[1] - weights[0]) + LATERAL_INFLUENCE*(weights[2] - weights[1])) / 3;
+    slope = -(CENTER_INFLUENCE*(weights[1] - weights[0]) + LATERAL_INFLUENCE*(weights[2] - weights[1])) / 3;
   } else {
-    slope = -(CENTER_INFLUENCE*(weights[1] - weights[2]) + LATERAL_INFLUENCE*(weights[0] - weights[1])) / 3;
+    slope = (CENTER_INFLUENCE*(weights[1] - weights[2]) + LATERAL_INFLUENCE*(weights[0] - weights[1])) / 3;
   }
 }
 
