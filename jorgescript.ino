@@ -1,4 +1,5 @@
 #include "SimpleRT.hpp"
+#include "WeighedDetection.hpp"
 
 void setup() {
 
@@ -6,16 +7,21 @@ void setup() {
   Serial.begin(9600);
   Serial.println("----- STARTING -----");
 
-  setupDetection();
   SimpleRT::newTask("aLoop", aLoop, 1);
   SimpleRT::start();
 
 }
 
 void aLoop(void *params) {
+  WeighedDetector detector = WeighedDetector();
+  SimpleRT rt = SimpleRT(200);
+
   while(true) {
-    int* reading = read();
-    printValues(reading);
+    detector.read();
+    detector.computeProbs();
+    detector.log();
+    detector.computeSlope();
+    rt.awaitNextIteration();
   }
 }
 
