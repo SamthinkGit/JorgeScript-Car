@@ -95,7 +95,7 @@ void debugLED(void *args) {
   }
 }
 
-// Maximum Delay: 4ms
+// Delay: 4ms
 void aObstacleDetector(void *args) {
     SimpleRT rt = SimpleRT(20);
     while (true) {
