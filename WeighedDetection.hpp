@@ -29,6 +29,7 @@ private:
     int detections[3];
     int digital_detections[3];
     float weights[3];
+    volatile bool is_lost;
 
 public:
     float slope;
@@ -38,6 +39,7 @@ public:
     void computeProbs();
     void applySigmoid();
     void computeSlope();
+    bool lost();
 };
 
 

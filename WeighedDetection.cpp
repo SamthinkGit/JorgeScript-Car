@@ -15,6 +15,7 @@ WeighedDetector::WeighedDetector() {
   digital_detections[1] = 0;
   digital_detections[2] = 0;
   slope = 0;
+  is_lost = false;
 }
 
 void WeighedDetector::read() {
@@ -29,9 +30,11 @@ void WeighedDetector::read() {
 
   // If all the detections fail, then we keep the latest state
   if (result[0] == 0 && result[1] == 0 && result[2] == 0) {
+    is_lost = true;
     return;
   }
-
+  
+  is_lost = false;
   for (int i = 0; i < 3; i++) {
     digital_detections[i] = result[i];
   }
@@ -64,6 +67,9 @@ void WeighedDetector::applySigmoid() {
       weights[i] = 1/(1 + pow(M_E, -SIGMOID_CONTRAST*(-SIGMOID_SHIFT+weights[i])));
     }
   }
+}
+bool WeighedDetector::lost() {
+  return is_lost;
 }
 
 void WeighedDetector::log() {
