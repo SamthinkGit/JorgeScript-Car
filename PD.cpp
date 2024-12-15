@@ -13,3 +13,7 @@ float PD::next(float input) {
     latest = input;
     return proportional + derivative;
 }
+
+void PD::setKp(float Kp) {
+    this->Kp = Kp;
+}

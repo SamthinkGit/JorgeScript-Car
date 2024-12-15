@@ -12,6 +12,7 @@ private:
 
 public:
     PD(float Kp, float Kd);
+    void setKp(float Kp);
     float next(float input);
 };
 

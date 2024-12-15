@@ -45,10 +45,6 @@ void setMotorSpeedsFromSlope(float slope) {
 
     speed_left = constrain(speed_left, 0, 255);
     speed_right = constrain(speed_right, 0, 255);
-    Serial.print("Left: ");
-    Serial.print(speed_left);
-    Serial.print(" Right: ");
-    Serial.println(speed_right);
 
     setMotorSpeeds(speed_left, speed_right);
 }

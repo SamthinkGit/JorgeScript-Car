@@ -6,13 +6,8 @@ NonBlockingTimer timer;
 WeighedDetector detector;
 float input;
 
-float Kp = 2.6;
-float Kd = 10;
-
-float LINEAR_KP = Kp;
-float AGGRESIVE_KP = 3;
-float CHANGE_KP_AT=0.3;
-
+float Kp = 2;
+float Kd = 8;
 PD pd = PD(Kp, Kd);
 
 void setup() {
@@ -27,22 +22,15 @@ void setup() {
 
 void loop() {
 
-  if (timer.getElapsedTime() > 11) {
+  if (timer.getElapsedTime() > 3) {
     setMotorSpeeds(0, 0);
     return;
-  }
+  } 
 
   detector.read();
   detector.computeProbs();
-  detector.applySigmoid();
   detector.computeSlope();
 
-  if (abs(detector.slope) > CHANGE_KP_AT) {
-    pd.setKp(AGGRESIVE_KP);
-  } else {
-    pd.setKp(LINEAR_KP);
-  }
-  // detector.log();
   input = pd.next(detector.slope);
   setMotorSpeedsFromSlope(input);
 }
