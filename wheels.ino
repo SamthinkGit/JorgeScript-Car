@@ -18,7 +18,7 @@
 #define PIN_Motor_PWMB 6
 
 // Yup, im gonna try full speed xD
-const int BASE_SPEED = 255;
+int BASE_SPEED = 255;
 
 void setupWheels() {
     pinMode(PIN_Motor_STBY, OUTPUT);
@@ -30,6 +30,10 @@ void setupWheels() {
     digitalWrite(PIN_Motor_STBY, HIGH);
 }
 
+void setBaseSpeed(int vel) {
+  BASE_SPEED = vel;
+}
+
 void setMotorSpeeds(int speedLeft, int speedRight) {
     digitalWrite(PIN_Motor_AIN_1, speedRight >= 0 ? HIGH : LOW);
     analogWrite(PIN_Motor_PWMA, abs(speedRight));
@@ -39,12 +43,13 @@ void setMotorSpeeds(int speedLeft, int speedRight) {
 
 void setMotorSpeedsFromSlope(float slope) {
     slope = constrain(slope, -1.0, 1.0);
+    slope *= 2;
     
     int speed_left = BASE_SPEED - (slope * BASE_SPEED);
     int speed_right = BASE_SPEED + (slope * BASE_SPEED);
 
-    speed_left = constrain(speed_left, 0, 255);
-    speed_right = constrain(speed_right, 0, 255);
+    speed_left = constrain(speed_left, -255, 255);
+    speed_right = constrain(speed_right, -255, 255);
 
     setMotorSpeeds(speed_left, speed_right);
 }

@@ -1,20 +1,25 @@
 //Arduino
-
 #include <Arduino.h>
-#ifndef PD_HPP
-#define PD_HPP
-class PD {
+#include <math.h>
 
+#ifndef PID_HPP
+#define PID_HPP
+
+class PID {
 private:
-  float Kp; 
-  float Kd;  
-  float latest;
+    float Kp, Ki, Kd;
+    float latest;
+    float integral;
+    float integralLimit;
+    float restartI;
 
 public:
-    PD(float Kp, float Kd);
-    void setKp(float Kp);
-    float next(float input);
-};
+    PID(float Kp, float Ki, float Kd, float integralLimit, float iLimit);
 
+    float next(float input);
+    void setKp(float Kp);
+    void setKi(float Ki);
+    void setKd(float Kd);
+};
 
 #endif

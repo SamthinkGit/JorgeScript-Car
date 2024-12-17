@@ -11,14 +11,14 @@
 #define PIN_ITR20001_RIGHT  A0
 
 
-const int LASER_UMBRAL = 100;
+const int LASER_UMBRAL = 500;
 const float MAX_WEIGHT = 0.8;
 const float MIN_WEIGHT = 0.2;
 const float CENTER_INFLUENCE = 2.0;
 const float LATERAL_INFLUENCE = 1.0;
 
-const float WEIGHT_DESCEND = -0.25;
-const float WEIGHT_ASCEND = 0.45;
+const float WEIGHT_DESCEND = -0.6;
+const float WEIGHT_ASCEND = 0.6;
 const float SIGMOID_CONTRAST = 10;
 const float MIN_SLOPE = 0.03;
 

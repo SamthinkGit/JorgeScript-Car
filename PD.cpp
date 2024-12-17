@@ -1,20 +1,45 @@
 //Arduino
 #include "PD.hpp"
 
-PD::PD(float Kp, float Kd) {
+PID::PID(float Kp, float Ki, float Kd, float integralLimit, float restartI) {
     this->Kp = Kp;
+    this->Ki = Ki;
     this->Kd = Kd;
     this->latest = 0.0;
+    this->integral = 0.0;
+    this->integralLimit = integralLimit;
+    this->restartI = restartI;
 }
 
-float PD::next(float input) {
+
+float PID::next(float input) {
     float proportional = Kp * input;
-    float derivative = Kd * (input - latest);
 
+    integral += Ki*input;
+    integral = constrain(integral, -integralLimit, integralLimit);
+    
+    if (abs(input) < restartI) {
+      integral = 0;
+    }
+
+    float derivative = Kd * (input - latest);
     latest = input;
-    return proportional + derivative;
+
+    Serial.print("I: ");
+    Serial.print(integral);
+
+    return proportional + integral + derivative;
 }
 
-void PD::setKp(float Kp) {
+// Métodos para ajustar las ganancias
+void PID::setKp(float Kp) {
     this->Kp = Kp;
+}
+
+void PID::setKi(float Ki) {
+    this->Ki = Ki;
+}
+
+void PID::setKd(float Kd) {
+    this->Kd = Kd;
 }

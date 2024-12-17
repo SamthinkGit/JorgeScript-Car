@@ -1,23 +1,29 @@
-#include "WeighedDetection.hpp"
+#include "Kalman.hpp"
 #include "timer.hpp"
 #include "PD.hpp"
 #include "SimpleRT.hpp"
 
 
-WeighedDetector detector;
+float R = 0.2;
+float Q = 0.8;
+float P = 1;
+KalmanFilter detector = KalmanFilter(0.0, P, Q, R);
 float input;
 
-float Kp = 2;
+float Kp = 0.4;
 float Kd = 8;
+float Ki = 0.001;
+float iLimit = 10;
+float restartI = 0.6;
 
-float LINEAR_KP = Kp;  
-float AGGRESIVE_KP = 2.5;
+float LINEAR_KP = 0.3;  
+float AGGRESIVE_KP = 0.6;
 float LOST_KP = 5;
 float CHANGE_KP_AT=0.3;
 float obstacle_distance = 0.0;
-float STOP_DISTANCE = 10;
+float STOP_DISTANCE = 20;
 
-PD pd = PD(Kp, Kd);
+PID pid(Kp, Ki, Kd, iLimit, restartI);
 
 void setup() {
 
@@ -25,8 +31,6 @@ void setup() {
   setupWheels();
   setupLed();
   setupSound(&obstacle_distance);
-
-  detector = WeighedDetector();
   
   SimpleRT::newTask("aNavigation", aNavigation, 1);
   SimpleRT::newTask("ObstacleDetector", aObstacleDetector, 2);
@@ -37,43 +41,39 @@ void setup() {
 // Maximum Delay: 3ms
 void aNavigation(void *args) {
   NonBlockingTimer timer;
-  SimpleRT rt = SimpleRT(10);
+  SimpleRT rt = SimpleRT(20);
   bool stopped = false;
   rt.await(1000);
   timer.start();
 
   while (true) {
     rt.awaitNextIteration();
-
-    if (stopped || obstacle_distance < STOP_DISTANCE || timer.getElapsedTime() > 13) {
+    if (stopped || obstacle_distance < STOP_DISTANCE) {
       setMotorSpeeds(0, 0);
       stopped = true;
       continue;
     }
 
-    detector.read();
-    detector.computeProbs();
-    detector.applySigmoid();
-    detector.computeSlope();
+    float measurement = detector.measure();
+    detector.predict();
+    detector.update(measurement);
+    
+    // if (detector.lost()) {
+    //   Kp = AGGRESIVE_KP;
+    // } else {
+    //   Kp = LINEAR_KP;
+    // }
 
-    if (abs(detector.slope) > CHANGE_KP_AT) {
-      pd.setKp(AGGRESIVE_KP);
-    } else {
-      pd.setKp(LINEAR_KP);
-    }
-    if (detector.lost()) {
-      pd.setKp(LOST_KP);
-    }
-
-    // detector.log();
-    input = pd.next(detector.slope);
-    setMotorSpeedsFromSlope(input);
+    float position_estimate = detector.getEstimate();
+    input = pid.next(position_estimate);
+    // input = position_estimate;
+    setMotorSpeedsFromSlope(-input);
   }
 }
 
 // Maximum Delay: 1ms
 void debugLED(void *args) {
-  SimpleRT rt = SimpleRT(20);
+  SimpleRT rt = SimpleRT(50);
   bool latest = false;
   bool new_state;
   showColor(0, 255, 0);

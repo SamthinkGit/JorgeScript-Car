@@ -34,6 +34,25 @@ void WeighedDetector::read() {
     return;
   }
   
+  // if (result[0] == 0 && result[1] == 1 && result[2] == 0) {
+  //   result[0]  = 1;
+  //   result[1] = 1;
+  //   result[2] = 1;
+  // }
+
+  // if (result[0] == 1 && result[1] == 1 && result[2] == 0) {
+  //   result[0]  = 1;
+  //   result[1] = 1;
+  //   result[2] = 1;
+  // }
+  
+  // if (result[0] == 0 && result[1] == 1 && result[2] == 1) {
+  //   result[0]  = 1;
+  //   result[1] = 1;
+  //   result[2] = 1;
+  // }
+  
+  
   is_lost = false;
   for (int i = 0; i < 3; i++) {
     digital_detections[i] = result[i];
