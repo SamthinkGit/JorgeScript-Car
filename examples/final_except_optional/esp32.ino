@@ -14,15 +14,15 @@
 
 MqttSetr mqtt_prove = MqttSetr(MQTT_SERVER, MQTT_SERVERPORT, "", "");
 
-// char* ssid = "POCO F3";
-// char* password = "12341234";
+char* ssid = "POCO F3";
+char* password = "12341234";
 
 // Configuración Wi-Fi
 #define EAP_ANONYMOUS_IDENTITY "20220719anonymous@urjc.es"  // leave as it is
 #define EAP_IDENTITY URJC_EMAIL                             // Use your URJC email
 #define EAP_PASSWORD URJC_PASS                              // User your URJC password
 #define EAP_USERNAME URJC_EMAIL                             // Use your URJC email
-char* ssid = "eduroam";
+// char* ssid = "eduroam";
 
 long unsigned start_time;
 
@@ -34,13 +34,14 @@ char json_buffer[200];
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
-  Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2);
+  Serial2.begin(38400, SERIAL_8N1, RXD2, TXD2);
   delay(10);
 
   // Conectar a Wi-Fi
   Serial.print("Conectando a Wi-Fi...");
-  WiFi.begin(ssid, WPA2_AUTH_PEAP, EAP_IDENTITY, EAP_USERNAME, EAP_PASSWORD);
-  //WiFi.begin(ssid, password);
+  //WiFi.begin(ssid, WPA2_AUTH_PEAP, EAP_IDENTITY, EAP_USERNAME, EAP_PASSWORD);
+  
+  WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
@@ -58,6 +59,7 @@ void setup() {
   mqtt_prove.publish(json_buffer);
   Serial2.println("<Arduino Start>");
   pingThread.onRun(pingSender);
+  controller.add(&pingThread);
   start_time = millis();
 }
 
@@ -77,12 +79,7 @@ void loop() {
       timer = recibido.substring(index + 1, recibido.length() - 1).toInt();
 
       create_json(action, timer);
-
-      if (mqtt_prove.ready()) {
-        mqtt_prove.publish(json_buffer);
-      } else {
-        mqtt_prove.reconnect();
-      }
+      mqtt_prove.publish(json_buffer);
     }
   }
 }
@@ -92,14 +89,28 @@ bool validarMensaje(String mensaje) {
   return (mensaje.startsWith("<") && mensaje.endsWith(">"));
 }
 
+void pingSender() {
+  unsigned long ping_time = millis() - start_time;
+  create_json("PING", ping_time);
+  mqtt_prove.publish(json_buffer);
+}
+
 void create_json(String function, unsigned long value) {
   StaticJsonDocument<200> jsonDoc;
 
-  if (function == "END_LAP" || function == "PING") {
+  if (function == "PING") {
     jsonDoc["team_name"] = "JorgeScript";
     jsonDoc["id"] = "6";
     jsonDoc["action"] = function;
-    jsonDoc["time"] = value;
+    double time_s = (double)value/1000;
+    jsonDoc["time"] = time_s;
+  }
+  if (function == "END_LAP") {
+    jsonDoc["team_name"] = "JorgeScript";
+    jsonDoc["id"] = "6";
+    jsonDoc["action"] = function;
+    double time_s = (double)(millis() - start_time)/1000;
+    jsonDoc["time"] = time_s;
   }
   if (function == "OBSTACLE_DETECTED") {
     jsonDoc["team_name"] = "JorgeScript";
@@ -113,10 +124,4 @@ void create_json(String function, unsigned long value) {
   }
 
   serializeJson(jsonDoc, json_buffer);
-}
-
-void pingSender() {
-  unsigned long ping_time = millis() - start_time
-  create_json("PING", ping_time);
-  mqtt_prove.publish(json_buffer);
 }

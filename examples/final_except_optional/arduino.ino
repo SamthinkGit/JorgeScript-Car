@@ -1,42 +1,55 @@
-#include "WeighedDetection.hpp"
+#include "Kalman.hpp"
 #include "timer.hpp"
 #include "PD.hpp"
 #include "SimpleRT.hpp"
 
 
-WeighedDetector detector;
+float R = 0.2;
+float Q = 0.8;
+float P = 1;
+KalmanFilter detector = KalmanFilter(0.0, P, Q, R);
 float input;
 
-float Kp = 2;
+float Kp = 0.4;
 float Kd = 8;
+float Ki = 0.0001;
+float iLimit = 10;
+float restartI = 0.6;
 
-float LINEAR_KP = Kp;  
-float AGGRESIVE_KP = 2.5;
+float LINEAR_KP = 0.5;  
+float AGGRESIVE_KP = 0.7;
 float LOST_KP = 5;
 float CHANGE_KP_AT=0.3;
 float obstacle_distance = 0.0;
-float STOP_DISTANCE = 10;
+float STOP_DISTANCE = 20;
+bool esp_ready = false;
+volatile bool last_lost = false;
+volatile bool ended = false;
+volatile bool finished = false;
 
-int total_time = 0;
-bool last_lost = true;
-
-
-PD pd = PD(Kp, Kd);
+PID pid(Kp, Ki, Kd, iLimit, restartI);
 
 void setup() {
 
-  Serial.begin(9600);
-
-  while (!Serial.available());
-
+  Serial.begin(38400);
   setupWheels();
   setupLed();
   setupSound(&obstacle_distance);
-
-  detector = WeighedDetector();
   
+  while (!esp_ready) {
+    if (Serial.available()) {
+      String recibido = Serial.readStringUntil('\n');
+      recibido.trim();
+
+      if ((recibido.startsWith("<") && recibido.endsWith(">"))) {
+      esp_ready = true;
+      }
+    }
+  }
+
   SimpleRT::newTask("aNavigation", aNavigation, 1);
   SimpleRT::newTask("ObstacleDetector", aObstacleDetector, 2);
+  SimpleRT::newTask("sendMessages", sendMessages, 4);
   SimpleRT::newTask("LED", debugLED, 5);
   SimpleRT::start();
 }
@@ -44,43 +57,39 @@ void setup() {
 // Maximum Delay: 3ms
 void aNavigation(void *args) {
   NonBlockingTimer timer;
-  SimpleRT rt = SimpleRT(10);
+  SimpleRT rt = SimpleRT(20);
   bool stopped = false;
   rt.await(1000);
   timer.start();
 
   while (true) {
     rt.awaitNextIteration();
-
-    if (stopped || obstacle_distance < STOP_DISTANCE || timer.getElapsedTime() > 13) {
+    if (stopped || obstacle_distance < STOP_DISTANCE) {
       setMotorSpeeds(0, 0);
       stopped = true;
       continue;
     }
 
-    detector.read();
-    detector.computeProbs();
-    detector.applySigmoid();
-    detector.computeSlope();
-
-    if (abs(detector.slope) > CHANGE_KP_AT) {
-      pd.setKp(AGGRESIVE_KP);
-    } else {
-      pd.setKp(LINEAR_KP);
-    }
+    float measurement = detector.measure();
+    detector.predict();
+    detector.update(measurement);
+    
     if (detector.lost()) {
-      pd.setKp(LOST_KP);
+      pid.setKp(AGGRESIVE_KP);
+    } else {
+      pid.setKp(LINEAR_KP);
     }
 
-    // detector.log();
-    input = pd.next(detector.slope);
-    setMotorSpeedsFromSlope(input);
+    float position_estimate = detector.getEstimate();
+    input = pid.next(position_estimate);
+    // input = position_estimate;
+    setMotorSpeedsFromSlope(-input);
   }
 }
 
 // Maximum Delay: 1ms
 void debugLED(void *args) {
-  SimpleRT rt = SimpleRT(20);
+  SimpleRT rt = SimpleRT(50);
   bool latest = false;
   bool new_state;
   showColor(0, 255, 0);
@@ -112,26 +121,26 @@ void aObstacleDetector(void *args) {
 }
 
 void sendMessages(void *args) {
-  SimpleRT rt = SimpleRT(30);
-  NonBlockingTimer timer = NonBlockingTimer();
+  SimpleRT rt = SimpleRT(200);
   while (true) {
-    timer.start();
     if (detector.lost() && !last_lost) {
       Serial.println("<LINE_LOST:0>");
-      Serial.println("<INIT_LINE_SEARCH:0>");
       last_lost = detector.lost();
     }
     if (!detector.lost() && last_lost) {
       Serial.println("<LINE_FOUND:0>");
-      Serial.println("<STOP_LINE_SEARCH:0>");
-      last_lost = true;
+      last_lost = detector.lost();
     }
-    if (obstacle_distance < STOP_DISTANCE) {
-      Serial.println("<END_LAP:"+String(total_time) + ">");
-      Serial.println("<OBSTACLE_DETECTED:"+String(obstacle_distance) + ">");
+    if (obstacle_distance < STOP_DISTANCE && !ended) {
+      Serial.println("<END_LAP:0>");
+      ended = true;
     }
-    Serial.println(timer.getMsElapsedTime());
-
+    if (ended && !finished) {
+      Serial.print("<OBSTACLE_DETECTED:"); 
+      Serial.print(obstacle_distance);
+      Serial.println(">");
+      finished = true;
+    }
     rt.awaitNextIteration();
   }
 }

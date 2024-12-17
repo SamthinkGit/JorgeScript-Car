@@ -25,8 +25,8 @@ float PID::next(float input) {
     float derivative = Kd * (input - latest);
     latest = input;
 
-    Serial.print("I: ");
-    Serial.print(integral);
+    //Serial.print("I: ");
+    //Serial.print(integral);
 
     return proportional + integral + derivative;
 }

@@ -2,6 +2,9 @@
 #include <WiFi.h>
 #include "passwords.hpp"
 #include <ArduinoJson.h>
+#include <Thread.h>
+#include <StaticThreadController.h>
+#include <ThreadController.h>
 
 #define MQTT_SERVER      "teachinghub.eif.urjc.es"  // Dirección del broker
 #define MQTT_SERVERPORT  21883                 // Puerto MQTT
@@ -11,8 +14,8 @@
 
 MqttSetr mqtt_prove = MqttSetr(MQTT_SERVER, MQTT_SERVERPORT, "", "");
 
-// char* ssid = "POCO F3";
-// char* password = "12341234";
+ThreadController controller = ThreadController();
+Thread pingThread = Thread();
 
 // Configuración Wi-Fi
 #define EAP_ANONYMOUS_IDENTITY "20220719anonymous@urjc.es" // leave as it is
@@ -22,6 +25,8 @@ MqttSetr mqtt_prove = MqttSetr(MQTT_SERVER, MQTT_SERVERPORT, "", "");
 char* ssid = "eduroam";
 
 char json_buffer[200];
+
+int time;
 
 void setup() {
   // put your setup code here, to run once:
@@ -41,6 +46,10 @@ void setup() {
   Serial.println("¡Conectado!");
 
   mqtt_prove.publish(create_json("START_LAP", 0));
+  pingThread.enabled = true;
+  pingThread.setInterval(4000);
+  pingThread.onRun(pingSender);
+  unsigned long time = millis();
 }
 
 void loop() {
@@ -104,4 +113,9 @@ void create_json(String function, int value) {
   }
   
   serializeJson(jsonDoc, json_buffer);
+}
+
+void pingSender() {
+  create_json("PING", time);
+  mqtt_prove.publish(json_buffer);
 }
