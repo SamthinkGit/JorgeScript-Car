@@ -11,13 +11,14 @@ KalmanFilter detector = KalmanFilter(0.0, P, Q, R);
 float input;
 
 float Kp = 0.4;
-float Kd = 8;
-float Ki = 0.0001;
+float Kd = 10;
+float Ki = 0.00001;
 float iLimit = 10;
-float restartI = 0.6;
+float restartI = 0.8;
 
-float LINEAR_KP = 0.5;  
-float AGGRESIVE_KP = 0.7;
+float LINEAR_KP = 0.3;  
+float AGGRESIVE_KP = 0.6
+;
 float LOST_KP = 5;
 float CHANGE_KP_AT=0.3;
 float obstacle_distance = 0.0;
@@ -26,6 +27,9 @@ bool esp_ready = false;
 volatile bool last_lost = false;
 volatile bool ended = false;
 volatile bool finished = false;
+
+float visible = 0;
+float total_line = 0;
 
 PID pid(Kp, Ki, Kd, iLimit, restartI);
 
@@ -49,7 +53,7 @@ void setup() {
 
   SimpleRT::newTask("aNavigation", aNavigation, 1);
   SimpleRT::newTask("ObstacleDetector", aObstacleDetector, 2);
-  SimpleRT::newTask("sendMessages", sendMessages, 4);
+  SimpleRT::newTask("sendMessages", sendMessages, 3);
   SimpleRT::newTask("LED", debugLED, 5);
   SimpleRT::start();
 }
@@ -59,7 +63,6 @@ void aNavigation(void *args) {
   NonBlockingTimer timer;
   SimpleRT rt = SimpleRT(20);
   bool stopped = false;
-  rt.await(1000);
   timer.start();
 
   while (true) {
@@ -75,9 +78,13 @@ void aNavigation(void *args) {
     detector.update(measurement);
     
     if (detector.lost()) {
+      minSpeed(-255);
       pid.setKp(AGGRESIVE_KP);
+      pid.setKi(0.001);
     } else {
+      minSpeed(0);
       pid.setKp(LINEAR_KP);
+      pid.setKi(0.0);
     }
 
     float position_estimate = detector.getEstimate();
@@ -121,7 +128,7 @@ void aObstacleDetector(void *args) {
 }
 
 void sendMessages(void *args) {
-  SimpleRT rt = SimpleRT(200);
+  SimpleRT rt = SimpleRT(100);
   while (true) {
     if (detector.lost() && !last_lost) {
       Serial.println("<LINE_LOST:0>");
@@ -139,9 +146,22 @@ void sendMessages(void *args) {
       Serial.print("<OBSTACLE_DETECTED:"); 
       Serial.print(obstacle_distance);
       Serial.println(">");
+
+      Serial.print("<VISIBLE_LINE:"); 
+      unsigned long perc = (visible/total_line)*100;
+      Serial.print(perc);
+      Serial.println(">");
       finished = true;
     }
+    trackLine();
     rt.awaitNextIteration();
+  }
+}
+
+void trackLine() {
+  total_line++;
+  if (!detector.lost()) {
+    visible++;
   }
 }
 

@@ -19,6 +19,7 @@
 
 // Yup, im gonna try full speed xD
 int BASE_SPEED = 255;
+int MIN_SPEED = -255;
 
 void setupWheels() {
     pinMode(PIN_Motor_STBY, OUTPUT);
@@ -32,6 +33,9 @@ void setupWheels() {
 
 void setBaseSpeed(int vel) {
   BASE_SPEED = vel;
+}
+void minSpeed(int speed) {
+  MIN_SPEED = speed;
 }
 
 void setMotorSpeeds(int speedLeft, int speedRight) {
@@ -48,8 +52,8 @@ void setMotorSpeedsFromSlope(float slope) {
     int speed_left = BASE_SPEED - (slope * BASE_SPEED);
     int speed_right = BASE_SPEED + (slope * BASE_SPEED);
 
-    speed_left = constrain(speed_left, -255, 255);
-    speed_right = constrain(speed_right, -255, 255);
+    speed_left = constrain(speed_left, MIN_SPEED, 255);
+    speed_right = constrain(speed_right, MIN_SPEED, 255);
 
     setMotorSpeeds(speed_left, speed_right);
 }

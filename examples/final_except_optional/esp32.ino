@@ -112,6 +112,12 @@ void create_json(String function, unsigned long value) {
     double time_s = (double)(millis() - start_time)/1000;
     jsonDoc["time"] = time_s;
   }
+  if (function == "VISIBLE_LINE") {
+    jsonDoc["team_name"] = "JorgeScript";
+    jsonDoc["id"] = "6";
+    jsonDoc["action"] = function;;
+    jsonDoc["time"] = value;
+  }
   if (function == "OBSTACLE_DETECTED") {
     jsonDoc["team_name"] = "JorgeScript";
     jsonDoc["id"] = "6";
