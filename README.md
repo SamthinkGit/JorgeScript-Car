@@ -123,6 +123,15 @@ Below are the three different implemented approaches for line following:
 2. **FastDetector**: An optimized, case-based implementation replicating the weight system with manually adjusted values. However, this option was extremely sensitive to noise.
 3. **Kalman Filter**: Finally, this approach was chosen for its balance between speed and robustness. Using the data (weights) from the first method, a system was modeled to track the line and dynamically update using Kalman.
 
+<div align="center">
+  <h3>WeighDetector Tracking</h3>
+</div>
+
+<div align="center">
+  <video src="https://github.com/user-attachments/assets/8510b777-f50c-4221-9b84-02a3c6fea754" height="200" />
+</div>
+
+
 The Kalman filter processes sensor readings from **ITR20001** sensors connected to analog pins A0, A1, and A2. The system estimates the line's position based on weights obtained from previous implementations:
 
 - **Prediction**: Calculates the future state based on the system model.
@@ -130,6 +139,8 @@ The Kalman filter processes sensor readings from **ITR20001** sensors connected 
 - **Noise Handling**: If the reading is invalid (NaN), the last valid estimation is used.
 
 This methodology ensures precise and stable line following, even in adverse conditions of noise and temporary line loss.
+
+
 
 ---
 
