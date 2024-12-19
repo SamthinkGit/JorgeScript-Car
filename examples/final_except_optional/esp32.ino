@@ -14,15 +14,15 @@
 
 MqttSetr mqtt_prove = MqttSetr(MQTT_SERVER, MQTT_SERVERPORT, "", "");
 
-char* ssid = "POCO F3";
-char* password = "12341234";
+// char* ssid = "POCO F3";
+// char* password = "12341234";
 
 // Configuración Wi-Fi
 #define EAP_ANONYMOUS_IDENTITY "20220719anonymous@urjc.es"  // leave as it is
 #define EAP_IDENTITY URJC_EMAIL                             // Use your URJC email
 #define EAP_PASSWORD URJC_PASS                              // User your URJC password
 #define EAP_USERNAME URJC_EMAIL                             // Use your URJC email
-// char* ssid = "eduroam";
+char* ssid = "eduroam";
 
 long unsigned start_time;
 
@@ -39,12 +39,11 @@ void setup() {
 
   // Conectar a Wi-Fi
   Serial.print("Conectando a Wi-Fi...");
-  //WiFi.begin(ssid, WPA2_AUTH_PEAP, EAP_IDENTITY, EAP_USERNAME, EAP_PASSWORD);
-  
-  WiFi.begin(ssid, password);
+  WiFi.begin(ssid, WPA2_AUTH_PEAP, EAP_IDENTITY, EAP_USERNAME, EAP_PASSWORD);
+  // WiFi.begin(ssid, password);
+
   while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
+    delay(50);
   }
 
   Serial.println("¡Conectado!");
