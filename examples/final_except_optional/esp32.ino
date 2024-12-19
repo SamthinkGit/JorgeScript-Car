@@ -102,21 +102,20 @@ void create_json(String function, unsigned long value) {
     jsonDoc["team_name"] = "JorgeScript";
     jsonDoc["id"] = "6";
     jsonDoc["action"] = function;
-    double time_s = (double)value/1000;
-    jsonDoc["time"] = time_s;
+    jsonDoc["time"] = millis();
   }
   if (function == "END_LAP") {
     jsonDoc["team_name"] = "JorgeScript";
     jsonDoc["id"] = "6";
     jsonDoc["action"] = function;
-    double time_s = (double)(millis() - start_time)/1000;
-    jsonDoc["time"] = time_s;
+    jsonDoc["time"] = (millis() - start_time);
+    pingThread.enabled = false;
   }
   if (function == "VISIBLE_LINE") {
     jsonDoc["team_name"] = "JorgeScript";
     jsonDoc["id"] = "6";
     jsonDoc["action"] = function;;
-    jsonDoc["time"] = value;
+    jsonDoc["value"] = value;
   }
   if (function == "OBSTACLE_DETECTED") {
     jsonDoc["team_name"] = "JorgeScript";
