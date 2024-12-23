@@ -1,4 +1,10 @@
 //Arduino
+/*
+=================================================
+[DEPRECATED] WeighedDetector - Header
+=================================================
+*/
+
 #include <Arduino.h>
 #include <math.h>
 
@@ -11,6 +17,7 @@
 #define PIN_ITR20001_RIGHT  A0
 
 
+// =================== CLASS DEFINITION ===================
 const int LASER_UMBRAL = 500;
 const float MAX_WEIGHT = 0.8;
 const float MIN_WEIGHT = 0.2;

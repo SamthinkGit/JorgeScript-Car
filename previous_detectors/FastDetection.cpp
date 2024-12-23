@@ -1,4 +1,14 @@
 //Arduino
+/*
+=================================================
+[DEPRECATED] Fast Line Detection
+=================================================
+This module implements a fast line detection algorithm
+using three sensors. It tracks the current and previous
+sensor states to estimate the line's slope and determine
+if the line is lost.
+*/
+
 #include "FastDetection.hpp"
 
 FastDetector::FastDetector() {
@@ -22,6 +32,7 @@ FastDetector::FastDetector() {
 }
 
 void FastDetector::read() {
+  // Reads sensor data and updates the detection history.
   int detections[3];
 
   detections[0] = analogRead(PIN_ITR20001_LEFT);
@@ -49,10 +60,12 @@ void FastDetector::read() {
 
 
 bool FastDetector::array_is(int* array, int i, int j, int k) {
+  // Helper function: Checks if an array matches a specific pattern.
   return (array[0] == i && array[1] == j && array[2] == k);
 }
 
 void FastDetector::loadSlope() {
+  // Calculates the slope of the line based on the current detections.
   is_lost = false;
   if (array_is(current_detections, 1, 1, 1) || array_is(current_detections, 0, 1, 0)) {
     slope = 0.0;

@@ -1,4 +1,15 @@
 //Arduino
+/*
+=================================================
+[DEPRECATED] Weighed Detector Module
+=================================================
+This module implements a weighed detection system
+based on sensor readings. It processes input data 
+from three ITR20001 sensors, updates internal weights, 
+computes the slope for navigation, and applies a 
+sigmoid function to smooth the weight adjustments.
+*/
+
 #include "WeighedDetection.hpp"
 
 WeighedDetector::WeighedDetector() {
@@ -19,11 +30,14 @@ WeighedDetector::WeighedDetector() {
 }
 
 void WeighedDetector::read() {
+  // Reads the analog values from the sensors and converts them to digital
+  // detections. (1 if line detected 0 if not)
   detections[0] = analogRead(PIN_ITR20001_LEFT);
   detections[1] = analogRead(PIN_ITR20001_MIDDLE);
   detections[2] = analogRead(PIN_ITR20001_RIGHT);
   int result[3];
   
+  // Convert analog readings to binary values based on a threshold.
   for (int i = 0; i < 3; i++) {
     result[i] = detections[i] > LASER_UMBRAL ? 1 : 0;
   }
@@ -34,25 +48,7 @@ void WeighedDetector::read() {
     return;
   }
   
-  // if (result[0] == 0 && result[1] == 1 && result[2] == 0) {
-  //   result[0]  = 1;
-  //   result[1] = 1;
-  //   result[2] = 1;
-  // }
-
-  // if (result[0] == 1 && result[1] == 1 && result[2] == 0) {
-  //   result[0]  = 1;
-  //   result[1] = 1;
-  //   result[2] = 1;
-  // }
-  
-  // if (result[0] == 0 && result[1] == 1 && result[2] == 1) {
-  //   result[0]  = 1;
-  //   result[1] = 1;
-  //   result[2] = 1;
-  // }
-  
-  
+  // Update digital detections and mark the system as not lost.
   is_lost = false;
   for (int i = 0; i < 3; i++) {
     digital_detections[i] = result[i];
@@ -60,7 +56,9 @@ void WeighedDetector::read() {
 }
 
 void WeighedDetector::computeProbs() {
+  // Updates the weights based on the current digital detections.
   float addition;
+
   for (int i = 0; i < 3; i++) {
     addition = digital_detections[i] == 1 ? WEIGHT_ASCEND : WEIGHT_DESCEND;
     weights[i] = constrain((weights[i] + addition), MIN_WEIGHT, MAX_WEIGHT);
@@ -68,17 +66,22 @@ void WeighedDetector::computeProbs() {
 }
 
 void WeighedDetector::computeSlope() {
+  // Computes the slope based on the updated weights for navigation purposes.
   if (weights[0] > weights[2]) {
     slope = -(CENTER_INFLUENCE*(weights[1] - weights[0]) + LATERAL_INFLUENCE*(weights[2] - weights[1])) / 3;
   } else {
     slope = (CENTER_INFLUENCE*(weights[1] - weights[2]) + LATERAL_INFLUENCE*(weights[0] - weights[1])) / 3;
   }
+
+  // Sets the slope to zero if its absolute value is below the minimum
+  // threshold.
   if (abs(slope) < MIN_SLOPE) {
     slope = 0.0;
   }
 }
 
 void WeighedDetector::applySigmoid() {
+  // Applies a sigmoid function to smooth the weight adjustments.
   for (int i = 0; i < 3; i++) {
     if (weights[i] < 0) {
       weights[i] = 1/(1 + pow(M_E, SIGMOID_CONTRAST*(SIGMOID_SHIFT+weights[i])));
@@ -88,10 +91,14 @@ void WeighedDetector::applySigmoid() {
   }
 }
 bool WeighedDetector::lost() {
+  // Returns the lost state of the system.
   return is_lost;
 }
 
 void WeighedDetector::log() {
+  // [DEBUG] Logs the current state of the system, including sensor readings, weights,
+  // and slope.
+
   Serial.print("(analog=[");
   for (int i = 0; i < 3; i++) {
     Serial.print(detections[i]);

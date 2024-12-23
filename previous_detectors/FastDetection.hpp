@@ -1,7 +1,11 @@
 //Arduino
+/*
+=================================================
+[DEPRECATED] FastDetection - Header
+=================================================
+*/
 #include <Arduino.h>
 #include <math.h>
-
 
 #ifndef FAST_DETECTION_HPP
 #define FAST_DETECTION_HPP

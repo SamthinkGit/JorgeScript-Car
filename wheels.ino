@@ -1,4 +1,18 @@
 //Arduino
+/*
+=================================================
+Motor Control Module
+=================================================
+This module provides functions to control two motors 
+connected to a robot, enabling forward and backward 
+movement, speed adjustment, and directional control 
+based on slope values.
+
+Features:
+  - Independent speed control for left and right motors.
+  - Directional control using digital pins.
+  - Speed adjustment based on slope for smooth navigation.
+*/
 
 // Enable/Disable motor control.
 //  HIGH: motor control enabled
@@ -22,6 +36,7 @@ int BASE_SPEED = 255;
 int MIN_SPEED = -255;
 
 void setupWheels() {
+    // Initializes motor control pins and enables standby mode.
     pinMode(PIN_Motor_STBY, OUTPUT);
     pinMode(PIN_Motor_AIN_1, OUTPUT);
     pinMode(PIN_Motor_PWMA, OUTPUT);
@@ -32,13 +47,19 @@ void setupWheels() {
 }
 
 void setBaseSpeed(int vel) {
+  // Sets the base speed for the motors.
   BASE_SPEED = vel;
 }
+
 void minSpeed(int speed) {
+  // Sets the minimum allowable speed for the motors.
+  // Note: Setting a negative vel enables drifting
   MIN_SPEED = speed;
 }
 
+
 void setMotorSpeeds(int speedLeft, int speedRight) {
+    // Controls the speeds and directions of the motors directly.
     digitalWrite(PIN_Motor_AIN_1, speedRight >= 0 ? HIGH : LOW);
     analogWrite(PIN_Motor_PWMA, abs(speedRight));
     digitalWrite(PIN_Motor_BIN_1, speedLeft >= 0 ? HIGH : LOW);
@@ -46,6 +67,9 @@ void setMotorSpeeds(int speedLeft, int speedRight) {
 }
 
 void setMotorSpeedsFromSlope(float slope) {
+    // Adjusts motor speeds based on a slope value (-1.0 to 1.0).
+    // `slope`: Controls the relative speeds of the motors for steering.
+
     slope = constrain(slope, -1.0, 1.0);
     slope *= 2;
     

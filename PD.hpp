@@ -1,7 +1,14 @@
 //Arduino
+/*
+=================================================
+PID - Header
+=================================================
+*/
 #include <Arduino.h>
 #include <math.h>
 
+
+// =================== CLASS DEFINITION ===================
 #ifndef PID_HPP
 #define PID_HPP
 
