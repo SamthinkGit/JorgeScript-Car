@@ -19,7 +19,7 @@ void MqttSetr::reconnect() {
     // If it is connected
     if (mqtt_client_.connect()) {
       Serial.println("¡Conectado!");
-      // Resuscribirse a los topics necesarios después de reconectar
+      // Resuscribes to topics
       mqtt_client_.subscribe(&subscriber_);
     }
   }
