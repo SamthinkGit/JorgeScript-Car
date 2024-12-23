@@ -123,16 +123,34 @@ Below are the three different implemented approaches for line following:
 2. **FastDetector**: An optimized, case-based implementation replicating the weight system with manually adjusted values. However, this option was extremely sensitive to noise.
 3. **Kalman Filter**: Finally, this approach was chosen for its balance between speed and robustness. Using the data (weights) from the first method, a system was modeled to track the line and dynamically update using Kalman.
 
-The Kalman filter processes sensor readings from **ITR20001** sensors connected to analog pins A0, A1, and A2. The system estimates the line's position based on weights obtained from previous implementations:
+### 3. **Kalman Filter**:
 
-- **Prediction**: Calculates the future state based on the system model.
-- **Update**: Adjusts the estimation based on current sensor readings.
-- **Noise Handling**: If the reading is invalid (NaN), the last valid estimation is used.
+The Kalman filter was chosen for its balance between speed and robustness. This method leverages data obtained from **ITR20001** sensors connected to analog pins A0, A1, and A2, modeling a system that continuously predicts and updates the line’s position. The implementation follows these key steps:
 
-This methodology ensures precise and stable line following, even in adverse conditions of noise and temporary line loss.
+#### **Prediction and Update**
+1. **Prediction**: Using the system model, the Kalman filter estimates the next state of the line (i.e., its expected position). This calculation relies solely on previous states.
 
+2. **Update**: When new sensor readings arrive, they are compared to the prediction. The filter adjusts its current estimate based on the discrepancy between the expected and measured values. This adjustment includes a gain factor that prioritizes reliable readings over noise.
 
+```cpp
 
+// Convert sensor detection to weights (FSM methodology)
+float measurement = detector.measure(); 
+
+// Predict the next state
+detector.predict();
+
+// Compare the prediction to the detection
+detector.update(measurement);
+
+// Get a new estimation
+float position_estimate = detector.getEstimate();
+```
+
+#### **Behavior During Line Loss**
+When the line is completely lost (no sensor detects the line), the Kalman filter does not interfere. Instead, control shifts to the **PID controller**, where the integrator takes full action. This allows the system to recover the line quickly using accumulated control values. The Kalman filter is designed to "step back" in these moments, avoiding additional noise or overcomplications during the correction process.
+
+> Note: This methodology has been accomplished by adapting an online tutorial in [this page](https://www.robotsforroboticists.com/kalman-filtering/).
 ---
 
 ## 🚗 Dynamic PID Control System
