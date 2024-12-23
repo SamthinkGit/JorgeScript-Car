@@ -237,7 +237,19 @@ Serial.println(elapsed);
 <div align="center">
   <video src="https://github.com/user-attachments/assets/8510b777-f50c-4221-9b84-02a3c6fea754" height="200" />
 </div>
+	  
+<div align="center">
+  <h3>(Final) Kalman Tracking on Custom Track</h3>
+</div>
 
 <div align="center">
-  <h3>(Final) Kalman Tracking</h3>
+  <video src="https://github.com/user-attachments/assets/6f437f8a-2796-4e94-89d8-7aca0afc6e48" height="200" />
+</div>
+
+<div align="center">
+  <h3>(Final) Kalman on Exam Track</h3>
+</div>
+
+<div align="center">
+  <video src="https://github.com/user-attachments/assets/ec319da2-20a1-4b47-b527-0dbce1e16eab" height="200" />
 </div>
